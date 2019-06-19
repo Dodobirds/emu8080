@@ -88,40 +88,55 @@ int disassembleOp(const std::vector<unsigned char>& buffer, int pc) {
     int op_size = 1;
     
     switch (code) {
-
         case 0b00110110:
-            std::cout << "MVI M,data " << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "MVI M,data " << (int)buffer[pc + op_size++]; break;
         case 0b00111010:
-            std::cout << "LDA addr " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "LDA addr " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++]; break;
         case 0b00110010:
-            std::cout << "STA addr " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "STA addr " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++]; break;
         case 0b00101010:
-            std::cout << "LHLD addr " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "LHLD addr " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++]; break;
         case 0b00100010:
-            std::cout << "SHLD addr "  << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "SHLD addr "  << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++]; break;
         case 0b10000110:
-            std::cout << "ADD M ";
-            break;
+            std::cout << "ADD M "; break;
         case 0b11000110:
-            std::cout <<"ADI data " << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "ADI data " << (int)buffer[pc + op_size++]; break;
         case 0b10001110:
-            std::cout <<"ADC M ";
-            break;
+            std::cout << "ADC M "; break;
         case 0b11001110:
-            std::cout <<"ACI data " << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "ACI data " << (int)buffer[pc + op_size++]; break;
         case 0b10010110:
-            std::cout <<"SUB M ";
-            break;
+            std::cout << "SUB M "; break;
         case 0b11010110:
-            std::cout <<"SUI data " << (int)buffer[pc + op_size++];
-            break;
+            std::cout << "SUI data " << (int)buffer[pc + op_size++]; break;
+        case 0b10011110:
+            std::cout << "SBB M "; break;
+        case 0b11011110:
+            std::cout << "SBI data " << (int)buffer[pc + op_size++]; break;
+        case 0b00110100:
+            std::cout << "INR M "; break;
+        case 0b00110101:
+            std::cout << "DCR M "; break;
+        case 0b00100111:
+            std::cout << "DAA "; break;
+        case 0b10100110:
+            std::cout << "ANA M "; break;
+        case 0b11100110:
+            std::cout << "ANI data " << (int)buffer[pc + op_size++]; break;
+        case 0b10101110:
+            std::cout << "XRA M "; break;
+        case 0b11101110:
+            std::cout << "XRI data " << (int)buffer[pc + op_size++]; break;
+        case 0b10110110:
+            std::cout << "ORA M"; break;
+        case 0b11110110:
+            std::cout << "ORI data " << (int)buffer[pc + op_size++]; break;
+        case 0b10111110:
+            std::cout << "CMP M "; break;
+        case 0b11111110:
+            std::cout << "CPI data " << (int)buffer[pc + op_size++]; break;
+
 
     }
     if (readBitsAt(code, 0,2) == 0b01) {
