@@ -5,14 +5,14 @@
 
 #define I_SIZE 8
 
-int loadBytes(std::vector<unsigned char>& bytes, std::string filepath) {
+void loadBytes(std::vector<unsigned char>& bytes, std::string filepath) {
 
     std::ifstream file;
     file.open(filepath, std::ios::binary);
 
     if (file.fail()) {
         std::cout << "Failed to read from file" << std::endl; //I should learn exceptions :(
-        return 1;
+        return;
     }
 
     unsigned char byte;
@@ -20,7 +20,7 @@ int loadBytes(std::vector<unsigned char>& bytes, std::string filepath) {
         bytes.push_back(byte);
     }
 
-    return 0;
+    return;
 }
 
 
@@ -29,7 +29,7 @@ int loadBytes(std::vector<unsigned char>& bytes, std::string filepath) {
  * */
 int readBitsAt(unsigned char code, int start, int end) {
    code = code >> (I_SIZE - end);
-   return code & ~( (unsigned) -1 << (end - start));
+   return code & ~( 0xFF << (end - start));
 }
 
 int readSource(unsigned char code) {
@@ -79,6 +79,30 @@ std::string getRegPair(int a) {
             return "SP";
         default:
             std::cout << "Failed to find opcode(RP)" << std::endl;
+            return "";
+    }
+}
+
+std::string getCond(int a) {
+    switch(a) {
+        case 0b000:
+            return "cond_NZ";
+        case 0b001:
+            return "cond_Z";
+        case 0b010:
+            return "cond_NC";
+        case 0b011:
+            return "cond_C";
+        case 0b100:
+            return "cond_PO";
+        case 0b101:
+            return "cond_PE";
+        case 0b110:
+            return "cond_P";
+        case 0b111:
+            return "code_M";
+        default:
+            std::cout << "Failed to find condition" << std::endl;
             return "";
     }
 }
@@ -178,20 +202,71 @@ int disassembleOp(const std::vector<unsigned char>& buffer, int pc) {
             std::cout << "HLT "; break;
         case 0x00:
             std::cout << "NOP "; break;
+        default:
 
 
+
+            if (readBitsAt(code, 0,2) == 0b01) {
+                unsigned char dest = readDest(code);
+                unsigned char source = readSource(code);
+                if (source == 0b110) 
+                    std::cout << "MOV r M " << getReg(dest);
+                else if (dest == 0b110) 
+                    std::cout << "MOV M r " << getReg(source);
+                else
+                    std::cout << "MOV r1 r2 " << getReg(dest) << " " << getReg(source);
+            } else if (readBitsAt(code, 0, 2) == 0b00 ) {
+                if (readSource(code) == 0b110) 
+                    std::cout << "MVI r,data " << getReg(readDest(code)) << " " << (int)buffer[pc + op_size++];
+                else if (readBitsAt(code, 4, 8) == 0b0001)
+                    std::cout << "LXI rp,data " << getRegPair(readRP(code)) << " " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
+                else if (readBitsAt(code, 4, 8) == 0b1010)
+                    std::cout << "LDAX rp " << getRegPair(readRP(code));
+                else if (readBitsAt(code, 5, 8) == 0b0010)
+                    std::cout << "STAX rp " << getRegPair(readRP(code));
+                else if (readSource(code) == 0b100) 
+                    std::cout << "INR r " << getReg(readDest(code));
+                else if (readSource(code) == 0b101)
+                    std::cout << "DCR r " << getReg(readDest(code));
+                else if (readBitsAt(code, 5, 8) == 0b0011)
+                    std::cout << "INX rp " << getRegPair(readRP(code));
+                else if (readBitsAt(code, 5, 8) == 0b1011)
+                    std::cout << "DCX rp " << getRegPair(readRP(code));
+                else if (readBitsAt(code, 5, 8) == 0b1001)
+                    std::cout << "DAD rp " << getRegPair(readRP(code));
+            } else if (readBitsAt(code,0,2) == 0b11) {
+                if (readSource(code) == 0b010)
+                    std::cout << "Jcondition addr " << getCond(readDest(code)) << " " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
+                else if (readSource(code) == 0b100)
+                    std::cout << "Ccondition addr " << getCond(readDest(code)) << " " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
+                else if (readSource(code) == 0b000)
+                    std::cout << "Rcondition addr " << getCond(readDest(code));
+                else if (readSource(code) == 0b111)
+                    std::cout << "RST addr " << (readDest(code) << 3);
+                else if (readBitsAt(code,4,8) == 0b0101)
+                    std::cout << "PUSH rp " << getRegPair(readRP(code));
+                else if (readBitsAt(code,4,8) == 0b0001)
+                    std::cout << "POP rp " << getRegPair(readRP(code));
+            }
+            else if (readBitsAt(code,0,5) == 0b10000)
+                std::cout << "ADD r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10001) 
+                std::cout << "ADC r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10010)
+                std::cout << "SUB r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10011)
+                std::cout << "SBB r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10100)
+                std::cout << "ANA r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10101)
+                std::cout << "XRA r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10110)
+                std::cout << "ORA r " << getReg(readSource(code));
+            else if (readBitsAt(code,0,5) == 0b10111)
+                std::cout << "CMP r " << getReg(readSource(code));
     }
-    if (readBitsAt(code, 0,2) == 0b01) {
-        unsigned char dest = readDest(code);
-        unsigned char source = readSource(code);
-        if (source == 0b110) 
-            std::cout << "MOV r M " << getReg(dest);
-        else if (dest == 0b110) 
-            std::cout << "MOV M r " << getReg(source);
-        else
-            std::cout << "MOV r1 r2 " << getReg(dest) << " " << getReg(source);
-    }
-    
+
+    std::cout << "\t " << (int)code;
     std::cout << std::endl;
     return op_size;
 }
