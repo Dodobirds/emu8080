@@ -186,6 +186,8 @@ int disassembleOp(const std::vector<unsigned char>& buffer, int pc) {
             std::cout << "PUSH PSW "; break;
         case 0b11110001:
             std::cout << "POP PSW "; break;
+        case 0b11101011:
+            std::cout << "XCHG "; break;
         case 0b11100011:
             std::cout << "XTHL "; break;
         case 0b11111001:
@@ -222,17 +224,17 @@ int disassembleOp(const std::vector<unsigned char>& buffer, int pc) {
                     std::cout << "LXI rp,data " << getRegPair(readRP(code)) << " " << (int)buffer[pc + op_size++] << (int)buffer[pc + op_size++];
                 else if (readBitsAt(code, 4, 8) == 0b1010)
                     std::cout << "LDAX rp " << getRegPair(readRP(code));
-                else if (readBitsAt(code, 5, 8) == 0b0010)
+                else if (readBitsAt(code, 4, 8) == 0b0010)
                     std::cout << "STAX rp " << getRegPair(readRP(code));
                 else if (readSource(code) == 0b100) 
                     std::cout << "INR r " << getReg(readDest(code));
                 else if (readSource(code) == 0b101)
                     std::cout << "DCR r " << getReg(readDest(code));
-                else if (readBitsAt(code, 5, 8) == 0b0011)
+                else if (readBitsAt(code, 4, 8) == 0b0011)
                     std::cout << "INX rp " << getRegPair(readRP(code));
-                else if (readBitsAt(code, 5, 8) == 0b1011)
+                else if (readBitsAt(code, 4, 8) == 0b1011)
                     std::cout << "DCX rp " << getRegPair(readRP(code));
-                else if (readBitsAt(code, 5, 8) == 0b1001)
+                else if (readBitsAt(code, 4, 8) == 0b1001)
                     std::cout << "DAD rp " << getRegPair(readRP(code));
             } else if (readBitsAt(code,0,2) == 0b11) {
                 if (readSource(code) == 0b010)
@@ -266,7 +268,7 @@ int disassembleOp(const std::vector<unsigned char>& buffer, int pc) {
                 std::cout << "CMP r " << getReg(readSource(code));
     }
 
-    std::cout << "\t " << (int)code;
+    /* std::cout << "\t " << (int)code; */
     std::cout << std::endl;
     return op_size;
 }
